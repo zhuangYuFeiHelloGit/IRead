@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <include layout="@layout/back_iv"/>
+
+    <EditText
+        android:id="@+id/ago_et"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:hint="请输入原密码"
+        android:inputType="textPassword"
+        android:textSize="21sp"
+        android:layout_marginTop="50dp"
+        android:paddingLeft="15dp"
+        android:background="@drawable/shape_et_bg"/>
+
+    <EditText
+        android:id="@+id/new_et"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:hint="请输入新密码"
+        android:inputType="textPassword"
+        android:textSize="21sp"
+        android:layout_marginTop="50dp"
+        android:paddingLeft="15dp"
+        android:background="@drawable/shape_et_bg"/>
+
+    <TextView
+        android:id="@+id/ensure_tv"
+        android:layout_width="260dp"
+        android:layout_height="40dp"
+        android:text="确定"
+        android:textSize="23sp"
+        android:textColor="#ffffff"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/shape_login_register_btn_bg"
+        android:layout_marginTop="70dp"/>
+
+</LinearLayout>

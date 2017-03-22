@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/detail_book_top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="140dp">
+
+        <ImageView
+            android:id="@+id/detail_book_iv"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:src="@mipmap/ic_launcher" />
+
+        <TextView
+            android:id="@+id/detail_book_title_tv"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/detail_book_iv"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@id/detail_book_iv"
+            android:text="18"
+            style="@style/ItemTitleTv" />
+
+        <ImageView
+            android:id="@+id/detail_collection_iv"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@mipmap/un_collection"
+            android:layout_marginTop="12dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="25dp"/>
+
+        <ImageView
+            android:id="@+id/detail_shared_iv"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@mipmap/shared_icon"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="25dp"
+            android:layout_below="@id/detail_collection_iv"/>
+
+        <TextView
+            android:id="@+id/detail_book_author_tv"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@id/detail_book_title_tv"
+            android:layout_below="@id/detail_book_title_tv"
+            android:layout_marginTop="10dp"
+            android:text="作者"
+            style="@style/ItemTitleTv" />
+
+        <Button
+            android:id="@+id/detail_book_start_btn"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_alignLeft="@id/detail_book_title_tv"
+            android:layout_below="@id/detail_book_author_tv"
+            android:layout_marginTop="15dp"
+            android:background="#00d0d0"
+            android:padding="4dp"
+            android:text="阅读"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/detail_book_evaluate_btn"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_toRightOf="@id/detail_book_start_btn"
+            android:layout_marginLeft="13dp"
+            android:layout_below="@id/detail_book_author_tv"
+            android:layout_marginTop="15dp"
+            android:background="#00d0d0"
+            android:padding="4dp"
+            android:text="评论"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+        
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/detail_book_evaluate_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/detail_book_top_layout"
+        android:layout_margin="10dp"
+        android:scrollIndicators="none"
+        android:divider="@null"></ListView>
+</RelativeLayout>

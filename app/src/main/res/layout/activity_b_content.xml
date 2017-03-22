@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:id="@+id/content_layout"
+    android:background="#ffffff"
+    android:paddingTop="5dp">
+    <TextView
+        android:id="@+id/b_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:background="#ffffff"/>
+
+    <ScrollView
+        android:id="@+id/b_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/b_title_tv"
+        android:layout_marginTop="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/b_content_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="#000000"
+                android:background="#ffffff"/>
+        </LinearLayout>
+
+    </ScrollView>
+
+    <RelativeLayout
+        android:id="@+id/b_operate_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/b_last_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="300dp"
+            android:text="上一章"
+            android:textColor="#1249de"
+            android:textSize="30sp"
+            android:background="#e1d3e0"/>
+
+        <Button
+            android:id="@+id/b_next_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/b_last_btn"
+            android:layout_alignParentRight="true"
+            android:text="下一章"
+            android:textColor="#1249de"
+            android:textSize="35sp"
+            android:background="#e1d3e0"/>
+
+        <Button
+            android:id="@+id/b_direct_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/b_last_btn"
+            android:layout_centerHorizontal="true"
+            android:text="目录"
+            android:textColor="#1249de"
+            android:textSize="35sp"
+            android:background="#e1d3e0"/>
+
+        <Button
+            android:id="@+id/b_up_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/b_last_btn"
+            android:layout_centerHorizontal="true"
+            android:text="大一点"
+            android:layout_alignLeft="@id/b_last_btn"
+            android:textColor="#1249de"
+            android:textSize="30sp"
+            android:background="#e1d3e0"
+            android:layout_marginTop="20dp"/>
+
+        <Button
+            android:id="@+id/b_mode_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/b_up_btn"
+            android:layout_centerHorizontal="true"
+            android:text="天黑了"
+            android:textColor="#1249de"
+            android:textSize="35sp"
+            android:background="#e1d3e0"/>
+
+
+        <Button
+            android:id="@+id/b_down_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/b_up_btn"
+            android:layout_alignParentRight="true"
+            android:text="小一点"
+            android:textColor="#1249de"
+            android:textSize="35sp"
+            android:background="#e1d3e0"/>
+    </RelativeLayout>
+
+
+</RelativeLayout>

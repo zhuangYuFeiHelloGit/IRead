@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/to_login_tv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="登录后可使用书架功能\n点击去登录"
+        android:textSize="28sp"
+        />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/shelf_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/to_login_tv">
+
+    </android.support.v7.widget.RecyclerView>
+
+</android.support.percent.PercentRelativeLayout>

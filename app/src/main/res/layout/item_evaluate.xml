@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="5dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="15dp"
+    android:paddingBottom="15dp">
+
+    <View
+        android:id="@+id/item_line"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#c95a19"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_marginTop="10dp"
+        android:id="@+id/item_evaluate_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@mipmap/default_head_icon"
+        android:layout_below="@id/item_line"/>
+
+    <TextView
+        android:id="@+id/item_evaluate_name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/item_evaluate_icon"
+        android:layout_marginLeft="12dp"
+        android:text="我是名字"
+        android:layout_alignTop="@id/item_evaluate_icon"/>
+
+    <TextView
+        android:id="@+id/item_evaluate_date_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/item_evaluate_name_tv"
+        android:layout_alignLeft="@id/item_evaluate_name_tv"
+        android:layout_marginTop="5dp"
+        android:text="我是日期"/>
+
+    <ImageView
+        android:id="@+id/item_evaluate_delete_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/delete"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/item_evaluate_name_tv"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/item_evaluate_content_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/item_evaluate_name_tv"
+        android:layout_below="@id/item_evaluate_date_tv"
+        android:layout_marginTop="8dp"/>
+
+</RelativeLayout>
