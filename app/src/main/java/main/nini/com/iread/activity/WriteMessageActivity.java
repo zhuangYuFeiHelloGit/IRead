@@ -2,9 +2,10 @@ package main.nini.com.iread.activity;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,7 +24,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
-import java.util.UUID;
 
 import cn.bmob.v3.datatype.BmobFile;
 import cn.bmob.v3.exception.BmobException;
@@ -55,7 +55,8 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
     private Intent intent;
     private boolean isChange;
 
-    private static final int REQUEST_IMAGE = 100;
+    private static final int REQUEST_TAKE_IMAGE = 100;
+    private static final int REQUEST_FROM_PHONE = 200;
     private Bitmap icon;
     private String iconPath;
 
@@ -119,7 +120,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
                 takePhoto();
                 break;
             case R.id.write_from_tv:
-
+                choseHeadImageFromGallery();
                 break;
         }
     }
@@ -142,7 +143,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
         try {
 
             Intent toTake = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(toTake, REQUEST_IMAGE);
+            startActivityForResult(toTake, REQUEST_TAKE_IMAGE);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, "未找到照相机", Toast.LENGTH_SHORT).show();
         }
@@ -150,24 +151,52 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
         chooseLayout.setVisibility(View.GONE);
     }
 
+    // 从本地相册选取图片作为头像
+    private void choseHeadImageFromGallery() {
+        Intent intentFromGallery = new Intent();
+        // 设置文件类型
+        intentFromGallery.setType("image/*");
+        intentFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intentFromGallery,REQUEST_FROM_PHONE);
+    }
+
     private static final String TAG = "WriteMessageActivity";
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE && resultCode == RESULT_OK) {
+        // 用户没有进行有效的设置操作，返回
+        if (resultCode == RESULT_CANCELED) {
+            Toast.makeText(getApplication(), "取消", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (requestCode == REQUEST_TAKE_IMAGE && resultCode == RESULT_OK) {
             if(data != null){
-                Uri uriImageData = null;
                 Bundle bundle = data.getExtras();
                 icon = (Bitmap) bundle.get("data");
-//                if (data.getData() != null) {
-//                    uriImageData = data.getData();
-//                }
-//                else
-//                {
-//                    uriImageData  = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), icon, null,null));
-//                }
                 createPhotoPath();
+            }
+        }
+        if(requestCode == REQUEST_FROM_PHONE){
+            Log.e(TAG, "onActivityResult: " +data );
+            if(data != null){
+                Uri uri = data.getData();
+                Log.e(TAG, "onActivityResult: " +uri );
+
+                //用一个String数组存储相册所有图片
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                //用一个Cursor对象的到相册的所有内容
+                Cursor cursor = getContentResolver().query(uri,
+                        filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                //得到选中图片下标
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                //得到所选的相片路径
+                 iconPath = cursor.getString(columnIndex);
+                file = new File(iconPath);
+                icon = BitmapFactory.decodeFile(iconPath);
+                iconIv.setImageBitmap(icon);
+                Log.d(TAG, iconPath);
             }
         }
     }
