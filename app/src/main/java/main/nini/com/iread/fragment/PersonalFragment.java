@@ -13,6 +13,9 @@ import com.bumptech.glide.Glide;
 
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.SaveListener;
+import cn.sharesdk.framework.Platform;
+import cn.sharesdk.framework.ShareSDK;
+import cn.sharesdk.sina.weibo.SinaWeibo;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.greenrobot.event.ThreadMode;
@@ -199,6 +202,8 @@ public class PersonalFragment extends BaseFrag implements View.OnClickListener {
             public void onClick(DialogInterface dialog, int which) {
                 MySpUtil.logout();
                 changeToLogout();
+                Platform sina = ShareSDK.getPlatform(SinaWeibo.NAME);
+                sina.removeAccount(true);
                 EventBus.getDefault().post(new LogoutEvent());
             }
         }).setNegativeButton("取消", new DialogInterface.OnClickListener() {

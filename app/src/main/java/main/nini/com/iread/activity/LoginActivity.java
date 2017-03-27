@@ -179,13 +179,13 @@ public class LoginActivity extends BaseAty {
         user.signUp(new SaveListener<_User>() {
             @Override
             public void done(_User s, BmobException e) {
-//                if(e == null){
+                if(e == null){
                     //微博账号信息在后台中注册了,可以直接显示就可以了
                     loginSucceed(s);
 //                }else {
                     e.printStackTrace();
 //                    Toast.makeText(LoginActivity.this, "注册失败", Toast.LENGTH_SHORT).show();
-//                }
+                }
             }
         });
     }
