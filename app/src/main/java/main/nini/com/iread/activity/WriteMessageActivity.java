@@ -6,11 +6,15 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.icu.text.SimpleDateFormat;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,8 +27,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 import cn.bmob.v3.datatype.BmobFile;
@@ -36,6 +43,7 @@ import de.greenrobot.event.Subscribe;
 import de.greenrobot.event.ThreadMode;
 import main.nini.com.iread.R;
 import main.nini.com.iread.base.BaseAty;
+import main.nini.com.iread.my_util.ColorUtil;
 import main.nini.com.iread.my_util.MySpUtil;
 import main.nini.com.iread.my_util.event.LoginEvent;
 import main.nini.com.iread.my_util.event.WriteMessageEvent;
@@ -121,6 +129,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
                 break;
             case R.id.write_save_tv:
                 uploadIcon();
+                saveTv.setBackgroundColor(Color.GRAY);
                 break;
             case R.id.write_icon_iv:
                 chooseLayout.setVisibility(View.VISIBLE);
@@ -171,6 +180,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
         intentFromGallery.setType("image/*");
         intentFromGallery.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intentFromGallery,REQUEST_FROM_PHONE);
+        chooseLayout.setVisibility(View.GONE);
     }
 
     private static final String TAG = "WriteMessageActivity";
@@ -205,13 +215,111 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
                 //得到选中图片下标
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 //得到所选的相片路径
-                 iconPath = cursor.getString(columnIndex);
-                file = new File(iconPath);
-                icon = BitmapFactory.decodeFile(iconPath);
-                iconIv.setImageBitmap(icon);
+                iconPath = cursor.getString(columnIndex);
+                //TODO
+                final BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(iconPath, options);
+
+                // Calculate inSampleSize
+                options.inSampleSize = calculateInSampleSize(options, 480, 800);
+
+                // Decode bitmap with inSampleSize set
+                options.inJustDecodeBounds = false;
+
+                Bitmap bm = BitmapFactory.decodeFile(iconPath, options);
+
+                int degree = readPictureDegree(iconPath);
+                bm = rotateBitmap(bm,degree) ;
+
+                String saveDir = getSDCardPath();
+                String filename = getIconFileName(saveDir);
+                file = new File(saveDir,filename);
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(file);
+                    bm.compress(Bitmap.CompressFormat.JPEG, 30, fileOutputStream);
+                    this.iconPath = file.getPath();
+                    iconIv.setImageBitmap(bm);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally{
+                    try {
+                        if(fileOutputStream != null)
+                            fileOutputStream.close() ;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                //TODO
+
+//                file = new File(iconPath);
+//                icon = BitmapFactory.decodeFile(iconPath);
+//                iconIv.setImageBitmap(icon);
                 Log.d(TAG, iconPath);
             }
         }
+    }
+
+    private static int readPictureDegree(String path) {
+        int degree  = 0;
+        try {
+            ExifInterface exifInterface = new ExifInterface(path);
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return degree;
+    }
+
+    private static Bitmap rotateBitmap(Bitmap bitmap, int rotate){
+        if(bitmap == null)
+            return null ;
+
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+
+        // Setting post rotate to 90
+        Matrix mtx = new Matrix();
+        mtx.postRotate(rotate);
+        return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    private static int calculateInSampleSize(BitmapFactory.Options options,
+                                             int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            // Calculate ratios of height and width to requested height and
+            // width
+            final int heightRatio = Math.round((float) height
+                    / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+            // Choose the smallest ratio as inSampleSize value, this will
+            // guarantee
+            // a final image with both dimensions larger than or equal to the
+            // requested height and width.
+            inSampleSize = heightRatio < widthRatio ? widthRatio : heightRatio;
+        }
+
+        return inSampleSize;
     }
 
     /**
@@ -227,20 +335,16 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
     public  void createPhotoPath() {
         FileOutputStream fileOutputStream = null;
         try {
-            // 获取 SD 卡根目录
-            String saveDir = Environment.getExternalStorageDirectory() + "/IReadIcons";
-            // 新建目录
-            File dir = new File(saveDir);
-            if (!dir.exists()) dir.mkdir();
-            // 生成文件名
-            SimpleDateFormat t = new SimpleDateFormat("yyyyMMddssSSS");
-            String filename = "icon" + (t.format(new Date())) + ".jpg";
+            String saveDir = getSDCardPath();
+            String filename = getIconFileName(saveDir);
+
+
             // 新建文件
             file = new File(saveDir, filename);
             // 打开文件输出流
             fileOutputStream = new FileOutputStream(file);
             // 生成图片文件
-            this.icon.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            this.icon.compress(Bitmap.CompressFormat.JPEG, 30, fileOutputStream);
             // 相片的完整路径
             this.iconPath = file.getPath();
             Log.e(TAG, "onActivityResult: " + iconPath);
@@ -257,6 +361,22 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
             }
         }
 
+    }
+
+    @NonNull
+    private String getIconFileName(String saveDir) {
+        // 新建目录
+        File dir = new File(saveDir);
+        if (!dir.exists()) dir.mkdir();
+        // 生成文件名
+        SimpleDateFormat t = new SimpleDateFormat("yyyyMMddssSSS");
+        return "icon" + (t.format(new Date())) + ".jpg";
+    }
+
+    @NonNull
+    private String getSDCardPath() {
+        // 获取 SD 卡根目录
+        return Environment.getExternalStorageDirectory() + "/IReadIcons";
     }
 
     //获取SD卡下的一个安全路径
@@ -289,15 +409,28 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
 
     private void uploadIcon() {
         if (user != null) {
-            final Editable nickName = nameEt.getText();
+            String nickName = nameEt.getText().toString();
             if (nickName.length() > 7) {
                 Toast.makeText(this, "昵称长度不可长于7位", Toast.LENGTH_SHORT).show();
                 return;
+            }else if (nickName.length() == 0){
+                nickName = MySpUtil.getNickName();
             }
-
-            user.setNickName(nickName.toString());
+            if(nickName == null || nickName.equals("")){
+                Toast.makeText(this, "请输入昵称", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(file == null || !file.exists()){
+                Toast.makeText(this, "未更改信息", Toast.LENGTH_SHORT).show();
+                user.setNickName(MySpUtil.getNickName());
+                user.setIconUrl(MySpUtil.getIconUrl());
+                finish();
+                return;
+            }
+            user.setNickName(nickName);
             Log.d(TAG, "file:" + file);
             final BmobFile bmobFile = new BmobFile(file);
+            Toast.makeText(this, "开始上传,请耐心等待...", Toast.LENGTH_SHORT).show();
             bmobFile.uploadblock(new UploadFileListener() {
                 @Override
                 public void done(BmobException e) {
@@ -305,7 +438,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
                         Log.d(TAG, bmobFile.getUrl());
                         Log.d(TAG, bmobFile.getFileUrl());
                         Log.d(TAG, bmobFile.getLocalFile().getPath());
-
+                        Toast.makeText(WriteMessageActivity.this, "图片上传成功...正在更新用户数据", Toast.LENGTH_SHORT).show();
                         updateUser(bmobFile.getUrl());
                     }else {
                         e.printStackTrace();
