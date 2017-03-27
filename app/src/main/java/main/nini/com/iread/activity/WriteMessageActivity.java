@@ -21,6 +21,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Date;
@@ -85,6 +87,17 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
 
         intent = getIntent();
         isChange = intent.getBooleanExtra("isChange", false);
+        String nickName = MySpUtil.getNickName();
+        String iconUrl = MySpUtil.getIconUrl();
+        if(!iconUrl.equals("")){
+            Glide.with(this)
+                    .load(iconUrl)
+                    .error(R.mipmap.default_head_icon)
+                    .into(iconIv);
+        }
+        if(!nickName.equals("")){
+            nameEt.setHint(nickName);
+        }
 
         backIv.setOnClickListener(this);
         saveTv.setOnClickListener(this);
