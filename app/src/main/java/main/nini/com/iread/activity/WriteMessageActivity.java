@@ -1,12 +1,16 @@
 package main.nini.com.iread.activity;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,7 +21,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Date;
+import java.util.UUID;
 
 import cn.bmob.v3.datatype.BmobFile;
 import cn.bmob.v3.exception.BmobException;
@@ -50,6 +56,9 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
     private boolean isChange;
 
     private static final int REQUEST_IMAGE = 100;
+    private Bitmap icon;
+    private String iconPath;
+
 
     @Override
     public int setLayout() {
@@ -97,7 +106,7 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
                 }
                 break;
             case R.id.write_save_tv:
-                updateUser();
+                uploadIcon();
                 break;
             case R.id.write_icon_iv:
                 chooseLayout.setVisibility(View.VISIBLE);
@@ -141,21 +150,102 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
         chooseLayout.setVisibility(View.GONE);
     }
 
+    private static final String TAG = "WriteMessageActivity";
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE && resultCode == RESULT_OK) {
-            Uri iconUri = data.getData();
-            Log.e("write", iconUri.toString() + "000--------");
-            Bitmap icon = (Bitmap) data.getExtras().get("data");
-//            File file = new File(iconUri.toString());
-
-
-            iconIv.setImageBitmap(icon);
+            if(data != null){
+                Uri uriImageData = null;
+                Bundle bundle = data.getExtras();
+                icon = (Bitmap) bundle.get("data");
+//                if (data.getData() != null) {
+//                    uriImageData = data.getData();
+//                }
+//                else
+//                {
+//                    uriImageData  = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), icon, null,null));
+//                }
+                createPhotoPath();
+            }
         }
     }
 
-    private void updateUser() {
+    /**
+     * 拍照获取图片, imageUri.getPath() 图片路径
+     */
+    public static void getPhotoFromCamera(Activity context, int requestCode, Uri imageUri) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); // set the image file name
+        context.startActivityForResult(intent, requestCode);
+    }
+    //创建照片的路径
+    public  void createPhotoPath() {
+        FileOutputStream fileOutputStream = null;
+        try {
+            // 获取 SD 卡根目录
+            String saveDir = Environment.getExternalStorageDirectory() + "/IReadIcons";
+            // 新建目录
+            File dir = new File(saveDir);
+            if (!dir.exists()) dir.mkdir();
+            // 生成文件名
+            SimpleDateFormat t = new SimpleDateFormat("yyyyMMddssSSS");
+            String filename = "icon" + (t.format(new Date())) + ".jpg";
+            // 新建文件
+            file = new File(saveDir, filename);
+            // 打开文件输出流
+            fileOutputStream = new FileOutputStream(file);
+            // 生成图片文件
+            this.icon.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            // 相片的完整路径
+            this.iconPath = file.getPath();
+            Log.e(TAG, "onActivityResult: " + iconPath);
+            iconIv.setImageBitmap(icon);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    //获取SD卡下的一个安全路径
+    public static String getPath(String name) {
+        File file = new File(getSDPath() + "/" + name);
+        if (!file.exists()) {
+            try {
+                file.mkdirs();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "";
+            }
+        }
+        return file.getAbsolutePath();
+    }
+
+    //获取SD卡的路径
+    public static String getSDPath() {
+        return isExternalStorageWritable() ? Environment
+                .getExternalStorageDirectory().getPath() : Environment
+                .getDownloadCacheDirectory().getPath();
+    }
+
+    private static boolean isExternalStorageWritable() {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return true;
+        }
+        return false;
+    }
+
+    private void uploadIcon() {
         if (user != null) {
             final Editable nickName = nameEt.getText();
             if (nickName.length() > 7) {
@@ -164,21 +254,41 @@ public class WriteMessageActivity extends BaseAty implements View.OnClickListene
             }
 
             user.setNickName(nickName.toString());
-            user.update(user.getObjectId(), new UpdateListener() {
+            Log.d(TAG, "file:" + file);
+            final BmobFile bmobFile = new BmobFile(file);
+            bmobFile.uploadblock(new UploadFileListener() {
                 @Override
                 public void done(BmobException e) {
-                    if (e == null) {
-                        Log.e("test:", "更新成功：" + user.getUpdatedAt());//更改本地的缓存信息
-                        MySpUtil.saveUserPasswordId(user.getUsername(), password, user.getObjectId());
-                        MySpUtil.login();
-                        Toast.makeText(WriteMessageActivity.this, "设置成功", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Log.e("test:", "失败：" + e.toString());
+                    if(e == null){
+                        Log.d(TAG, bmobFile.getUrl());
+                        Log.d(TAG, bmobFile.getFileUrl());
+                        Log.d(TAG, bmobFile.getLocalFile().getPath());
+
+                        updateUser(bmobFile.getUrl());
+                    }else {
+                        e.printStackTrace();
                     }
                 }
             });
         }
+    }
+
+    private void updateUser(String iconUrl) {
+        user.setIconUrl(iconUrl);
+        user.update(user.getObjectId(), new UpdateListener() {
+            @Override
+            public void done(BmobException e) {
+                if (e == null) {
+                    Log.e("test:", "更新成功：" + user.getUpdatedAt());//更改本地的缓存信息
+                    MySpUtil.saveUserPasswordId(user.getUsername(), password, user.getObjectId());
+                    MySpUtil.login();
+                    Toast.makeText(WriteMessageActivity.this, "设置成功", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Log.e("test:", "失败：" + e.toString());
+                }
+            }
+        });
     }
 
     @Subscribe(threadMode = ThreadMode.MainThread)
